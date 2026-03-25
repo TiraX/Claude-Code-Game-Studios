@@ -52,3 +52,7 @@ See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 ## Context Management
 
 @.claude/docs/context-management.md
+
+## Language Preference
+
+所有与用户的交互一律使用**中文**。
