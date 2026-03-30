@@ -81,11 +81,42 @@ need more systems than the concept doc mentions. Use this inference pattern:
 
 Explain in conversation text why each implicit system is needed (with examples).
 
-### Step 2c: User Review
+### Step 2c: Apply Two-Level Category Hierarchy
 
-Present the enumeration organized by category. For each system, show:
-- Name
-- Category
+Systems must be organized using a **two-level (大类 → 小类) hierarchy** to prevent
+a flat list from becoming unnavigable as system count grows.
+
+**Rule: When a top-level category contains 4 or more systems, introduce sub-categories.**
+
+**How to define sub-categories:**
+- Group systems by shared *function* or *domain focus*, not just by who builds them
+- Sub-category names should reflect what the player experiences, not implementation
+  details (e.g., "生态种植" not "植物模块")
+- Each sub-category should contain 2–5 systems; if a sub-category would have only
+  1 system, fold it into a sibling sub-category or leave as standalone
+- A system that is a clear singleton in a category may remain without a sub-category
+  label (use "—" as sub-category)
+
+**Common sub-category patterns by top-level category:**
+- **Core** → Foundation (zero-dep infra), Control & Camera, World Management
+- **Gameplay** → per-mechanic pillar (e.g., Planting, Magic, Building, Animal, Island)
+- **Economy** → Resources, Vitality/Progress, Relationship/Bond
+- **UI** → HUD/Feedback, Interaction Panels, Journal/Log
+- **Narrative** → Dialogue, Events/Story, Records/Lore
+
+**Presentation format for enumeration:**
+Show systems grouped visually by 大类, then 小类, in a two-column grouping table.
+Include a `大类` column and a `小类` column in the enumeration table. Example:
+
+| # | 系统名 | 大类 | 小类 | 优先级 | 状态 | 设计文档 | 依赖系统 |
+|---|--------|------|------|--------|------|----------|----------|
+| 1 | 输入系统 | Core | 基础框架 | MVP | 未开始 | — | — |
+| 2 | 精灵角色控制器 | Core | 控制与视角 | MVP | 未开始 | — | 输入系统 |
+
+### Step 2d: User Review
+
+Present the enumeration organized by 大类 and 小类. For each system, show:
+- Name, 大类, 小类
 - Brief description (1 sentence)
 - Whether it was explicit (from concept) or implicit (inferred)
 
@@ -93,6 +124,7 @@ Then use `AskUserQuestion` to capture feedback:
 - "Are there systems missing from this list?"
 - "Should any of these be combined or split?"
 - "Are there systems listed that this game does NOT need?"
+- "Do the sub-category groupings make sense? Any that should be renamed or merged?"
 
 Iterate until the user approves the enumeration.
 
@@ -187,6 +219,46 @@ systems index with all data from Phases 2-4:
 - Fill the recommended design order
 - Fill the high-risk systems
 - Fill progress tracker (all systems "Not Started" initially, unless GDDs already exist)
+
+### Step 5a-2: Derive Minimum Prototype System Set
+
+After producing the full systems list, identify the **最小原型系统集** — the
+smallest possible subset of systems needed to answer the game's most critical
+unknown (usually "does the core gameplay loop feel good?").
+
+This is separate from the MVP list. Apply the following rules:
+
+1. **Identify the core question**: What is the single most important gameplay
+   hypothesis to validate? (e.g., "Does planting → magic → animal attraction
+   feel satisfying as a feedback loop?")
+2. **Tag each system** with one of three roles for the prototype:
+   - 🔴 **必建** — the system whose behavior is the hypothesis; must be built
+   - 🟡 **存根** — required by 必建 systems to compile or run; stub/hardcode in ≤ 30 lines
+   - ⚪ **跳过** — everything else (all UI systems, audio, persistence, progression,
+     meta, analytics, systems beyond vertical-slice priority)
+3. **Scope constraint**: The 必建 set should contain **no more than 3–5 systems**.
+   If more are required, the prototype question is too broad — split it into
+   two smaller experiments.
+4. **Add a "最小原型系统集" section** to the systems index document:
+
+```markdown
+## 最小原型系统集
+
+> 目的：验证「[core question]」
+> 原则：原型 ≠ MVP。本集合仅需能运行出「感受」，不需要完整数值平衡、存档或UI。
+
+| 系统 | 原型角色 | 实现建议 |
+|------|---------|---------|
+| [系统名] | 🔴 必建 | 完整实现最小可测版本 |
+| [系统名] | 🟡 存根 | 硬编码单一数值即可（如 `const MANA = 50`）|
+| [系统名] | ⚪ 跳过 | 不需要，用占位数据代替 |
+
+**验证时长目标**：1–3天等效工作量
+**验证结论输出**：运行 `/prototype [描述]` 开始原型
+```
+
+5. Present this section to the user for review before writing.
+
 
 ### Step 5b: Approval
 

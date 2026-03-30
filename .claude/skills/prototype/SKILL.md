@@ -16,6 +16,37 @@ When this skill is invoked:
    what engine, language, and frameworks are in use so the prototype is built
    with compatible tooling.
 
+2b. **Identify the minimum system set** (if a systems index exists):
+
+   - Check for `design/gdd/systems-index.md`. If it exists, read it.
+   - Classify every system in the index into one of three buckets:
+
+     | Bucket | Definition | Prototype treatment |
+     |--------|-----------|---------------------|
+     | **核心假设系统** | The system whose *feel or behavior* is the hypothesis being tested — removing it makes the prototype pointless | Build a real (but minimal) version |
+     | **脚手架系统** | Required for core systems to run, but their own design is not being tested | Hardcode or stub in ≤ 30 lines |
+     | **跳过系统** | Everything else: UI polish, audio, persistence, analytics, meta-systems, systems in later priority tiers | Do not build — use placeholder data or omit entirely |
+
+   - **Prototype ≠ MVP**: The MVP system list is what the game needs to *ship a
+     playable build*. The prototype only needs enough systems to answer the core
+     question. Many MVP systems can be:
+     - Replaced by hardcoded constants (e.g., game data config → `const MANA_COST = 10`)
+     - Replaced by a single integer counter (e.g., resource system → `int mana = 50`)
+     - Omitted entirely (e.g., save system, all UI systems, all audio systems)
+     - Merged into one throwaway script
+
+   - Present the classification to the user as a table before writing any code:
+     ```
+     核心假设系统 (build): [list]
+     脚手架存根   (stub):  [list]
+     跳过         (skip):  [list]
+     ```
+   - Wait for the user to confirm or adjust before proceeding.
+
+   - If no systems index exists, state the assumption: "No systems index found —
+     proceeding without scope reduction analysis. Consider running `/map-systems`
+     first to make the prototype scope explicit."
+
 3. **Create a prototype plan**: Define in 3-5 bullet points what the minimum
    viable prototype looks like. What is the core question? What is the absolute
    minimum code needed to answer it? What can be skipped?
