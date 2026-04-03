@@ -103,6 +103,23 @@ character design sheet, anthropomorphic spectacled langur male senior lawyer, ta
 
 向用户展示构建好的 prompt，**等待确认或修改后再继续**。
 
+### Step 3.5 — 请求发送权限确认
+
+展示完 Prompt 后，**必须**使用 `AskUserQuestion` 向用户请求权限，提供以下三个选项：
+
+```
+问题：「确认发送这条 Midjourney 生成请求？」
+
+选项：
+1. 同意本次 — 仅授权当前这一条请求，下次仍需确认
+2. 本 Session 内全部同意 — 当前会话内所有后续 Midjourney 请求自动发送，无需再次确认
+3. 不同意 — 取消本次发送，可修改 Prompt 后重试
+```
+
+- 若用户选择 **「本 Session 内全部同意」**，在当前会话剩余时间内跳过此步骤，直接发送后续请求
+- 若用户选择 **「不同意」**，停止流程并提示用户可以修改 Prompt 或取消任务
+- 会话级授权状态仅存在于当前 Claude Code session 内，**不写入任何文件**，下次启动 session 重置为需要确认
+
 ### Step 4 — 检查配置
 
 ```bash
