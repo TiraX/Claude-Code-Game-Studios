@@ -42,22 +42,44 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, AskUserQuestion
 
 ### Step 3 — 构建 Midjourney Prompt
 
-根据资产类型和项目美术风格，构建优化的 MJ prompt：
+根据资产类型和项目美术风格，构建优化的 MJ V7 prompt。
 
 **Prompt 结构**：
 ```
-[主体描述], [风格关键词], [技术参数], [质量参数]
+[主体描述], [环境/场景], [风格], [情绪/光线], [参数]
 ```
 
-**按资产类型的推荐参数**：
+**编写技巧**：
+- 使用**英文**描述，主体放最前面（权重最高）
+- 风格词放后段（如 `cinematic`, `oil painting`, `anime style`）
+- 用 `::` 控制权重，如 `cat::2 dog::1`
+- 使用 `--no text, watermark, blurry` 排除不需要的元素
+
+**按资产类型的推荐参数（默认使用 V7）**：
 
 | 资产类型 | 推荐参数 | 示例风格词 |
 |---------|---------|-----------|
-| `character` | `--ar 2:3 --q 2` | `character design, full body, white background, game asset` |
-| `scene` | `--ar 16:9 --q 2` | `environment concept art, game background, detailed` |
-| `ui` | `--ar 1:1 --q 2` | `game UI element, flat design, icon, clean` |
-| `item` | `--ar 1:1 --q 2` | `game item, isolated on white, detailed texture` |
-| `concept` | `--ar 16:9 --q 2` | `concept art, game art style, detailed illustration` |
+| `character` | `--ar 2:3 --draft --v 7` | `character design, full body, white background, game asset` |
+| `scene` | `--ar 16:9 --draft --v 7` | `environment concept art, game background, detailed` |
+| `ui` | `--ar 1:1 --v 7` | `game UI element, flat design, icon, clean` |
+| `item` | `--ar 1:1 --v 7` | `game item, isolated on white, detailed texture` |
+| `concept` | `--ar 16:9 --draft --v 7` | `concept art, game art style, detailed illustration` |
+
+> 💡 `--draft` 模式速度 2 倍、资源消耗 50%，适合快速迭代——满意后可在 Discord 中点击 Upscale 升级高清。
+
+**V7 进阶参数**（可选，询问用户是否需要）：
+
+| 参数 | 说明 | 适用场景 |
+|------|------|---------|
+| `--stylize 0-1000` | 风格化强度（默认100，越高越艺术） | 需要强烈画风时 |
+| `--chaos 0-100` | 变化程度，越高结果越多样 | 探索多种可能时 |
+| `--seed [数字]` | 固定种子，便于复现结果 | 需要一致性时 |
+| `--sref [URL]` | 风格参考图 | 有参考图时 |
+| `--sw 0-100` | 风格参考权重 | 配合 `--sref` |
+| `--cref [URL]` | 角色参考图（保持人物一致） | 角色立绘系列 |
+| `--cw 0-100` | 角色权重（低=只看脸，高=含服装） | 配合 `--cref` |
+| `--ow 0-1000` | Omni-Reference 权重（V7 新增） | 全向参考时 |
+| `--style raw` | 减少 AI 自动美化，更贴近原始提示 | 需要精确控制时 |
 
 向用户展示构建好的 prompt，**等待确认或修改后再继续**。
 
@@ -82,142 +104,155 @@ fi
 
 ### Step 5 — 发送生成请求
 
-通过 Discord API 向 Midjourney Bot 发送 `/imagine` 命令：
+**必须使用 Discord Interactions API**（而非普通消息），Midjourney Bot 只响应斜杠命令交互。
+
+先从 Guild 获取 `/imagine` 命令 ID（每个服务器固定，可缓存）：
 
 ```bash
-#!/bin/bash
-# 读取环境变量
+source .env
+
+# 获取 /imagine 命令 ID
+curl -s \
+  "https://discord.com/api/v10/guilds/${DISCORD_GUILD_ID}/application-command-index" \
+  -H "Authorization: ${DISCORD_TOKEN}" \
+  | python3 -c "
+import sys, json
+raw = sys.stdin.buffer.read().decode('utf-8', errors='replace')
+cmds = json.loads(raw).get('application_commands', [])
+for cmd in cmds:
+    if cmd.get('name') == 'imagine' and cmd.get('application_id') == '936929561302675456':
+        print(cmd['id'], cmd['version'])
+        break
+"
+```
+
+发送 `/imagine` 交互请求：
+
+```bash
 source .env
 
 PROMPT="$1"
-FULL_PROMPT="/imagine prompt: ${PROMPT}"
+COMMAND_ID="938956540159881230"        # Midjourney /imagine 命令 ID（固定值）
+APPLICATION_ID="936929561302675456"    # Midjourney Bot 应用 ID（固定值）
+COMMAND_VERSION="$2"                   # 从上面查询获取
 
-# 发送消息到 Discord 频道
-RESPONSE=$(curl -s -X POST \
-  "https://discord.com/api/v10/channels/${DISCORD_CHANNEL_ID}/messages" \
+PAYLOAD=$(python3 -c "
+import json, sys
+payload = {
+  'type': 2,
+  'application_id': '${APPLICATION_ID}',
+  'guild_id': '${DISCORD_GUILD_ID}',
+  'channel_id': '${DISCORD_CHANNEL_ID}',
+  'session_id': 'skill_session_001',
+  'data': {
+    'version': '${COMMAND_VERSION}',
+    'id': '${COMMAND_ID}',
+    'name': 'imagine',
+    'type': 1,
+    'options': [{'type': 3, 'name': 'prompt', 'value': sys.argv[1]}],
+    'application_command': {
+      'id': '${COMMAND_ID}',
+      'application_id': '${APPLICATION_ID}',
+      'version': '${COMMAND_VERSION}',
+      'name': 'imagine',
+      'description': 'Create images with Midjourney',
+      'type': 1,
+      'options': [{'type': 3, 'name': 'prompt', 'description': 'The prompt to imagine', 'required': True}]
+    }
+  }
+}
+print(json.dumps(payload))
+" "${PROMPT}")
+
+HTTP_STATUS=$(curl -s -o /dev/null -w '%{http_code}' -X POST \
+  "https://discord.com/api/v10/interactions" \
   -H "Authorization: ${DISCORD_TOKEN}" \
   -H "Content-Type: application/json" \
-  -d "{
-    \"content\": \"${FULL_PROMPT}\",
-    \"tts\": false
-  }")
+  -d "$PAYLOAD")
 
-echo "请求已发送，响应："
-echo "$RESPONSE" | python3 -m json.tool 2>/dev/null || echo "$RESPONSE"
-
-# 提取消息 ID 用于后续轮询
-MESSAGE_ID=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))" 2>/dev/null)
-echo "MESSAGE_ID=${MESSAGE_ID}"
+echo "HTTP 状态: $HTTP_STATUS"
+# 204 = 成功，无响应体
 ```
 
-### Step 6 — 等待并获取生成结果
+> ✅ HTTP 204 表示请求成功，Midjourney Bot 已接收并开始生成。
 
-Midjourney 生成需要约 30-90 秒。通过轮询频道消息来检测结果：
+### Step 6 — 等待生成完成
+
+V7 draft 模式约 15-30 秒，标准模式约 30-90 秒。轮询频道消息检测 Bot 回复：
 
 ```bash
-#!/bin/bash
 source .env
 
-WAIT_SECONDS=90
+WAIT_SECONDS=150
 POLL_INTERVAL=10
 ELAPSED=0
 
-echo "等待 Midjourney 生成结果（最多 ${WAIT_SECONDS} 秒）..."
+echo "等待 Midjourney 生成结果..."
 
 while [ $ELAPSED -lt $WAIT_SECONDS ]; do
   sleep $POLL_INTERVAL
   ELAPSED=$((ELAPSED + POLL_INTERVAL))
-  
-  # 获取频道最新消息，查找 Midjourney Bot 的回复
+
   MESSAGES=$(curl -s \
     "https://discord.com/api/v10/channels/${DISCORD_CHANNEL_ID}/messages?limit=5" \
     -H "Authorization: ${DISCORD_TOKEN}")
-  
-  # 查找包含图片附件的 Midjourney Bot 消息（Bot ID: 936929561302675456）
-  IMAGE_URL=$(echo "$MESSAGES" | python3 -c "
+
+  RESULT=$(echo "$MESSAGES" | python3 -c "
 import sys, json
-msgs = json.load(sys.stdin)
+raw = sys.stdin.buffer.read().decode('utf-8', errors='replace')
+msgs = json.loads(raw)
 for msg in msgs:
     if msg.get('author', {}).get('id') == '936929561302675456':
-        attachments = msg.get('attachments', [])
-        if attachments and attachments[0].get('url', '').endswith(('.png', '.jpg', '.webp')):
-            print(attachments[0]['url'])
-            break
+        for att in msg.get('attachments', []):
+            url = att.get('url', '')
+            if any(ext in url.lower() for ext in ['.png', '.jpg', '.webp']):
+                print(url)
+                sys.exit(0)
 " 2>/dev/null)
-  
-  if [ -n "$IMAGE_URL" ]; then
-    echo "找到生成结果：$IMAGE_URL"
-    echo "$IMAGE_URL"
+
+  if [ -n "$RESULT" ]; then
+    echo "DONE"
     exit 0
   fi
-  
-  echo "  已等待 ${ELAPSED}s，继续等待..."
+
+  echo "  已等待 ${ELAPSED}s..."
 done
 
-echo "超时：未在 ${WAIT_SECONDS} 秒内找到生成结果"
+echo "TIMEOUT"
 exit 1
 ```
 
-> ⚠️ 注意：此轮询方式依赖于频道中最新的 MJ Bot 消息，在高并发频道中可能出现误匹配。
-> 推荐使用私有服务器的专用频道以减少干扰。
+> ⚠️ 轮询依赖频道最新消息，推荐使用私有服务器专用频道避免干扰。
 
-### Step 7 — 下载并保存资产
+### Step 7 — 更新资产登记
 
-```bash
-#!/bin/bash
-# 参数：IMAGE_URL ASSET_TYPE DESCRIPTION
-IMAGE_URL="$1"
-ASSET_TYPE="$2"
-DESCRIPTION="$3"
-
-# 生成文件名：类型_日期时间_描述摘要
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-# 将描述转为 snake_case，最多 30 个字符
-SLUG=$(echo "$DESCRIPTION" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | tr -cd '[:alnum:]_' | cut -c1-30)
-FILENAME="${ASSET_TYPE}_${TIMESTAMP}_${SLUG}.png"
-
-# 确定保存目录
-SAVE_DIR="assets/art/generated/${ASSET_TYPE}"
-mkdir -p "$SAVE_DIR"
-
-# 下载图片
-curl -s -L "$IMAGE_URL" -o "${SAVE_DIR}/${FILENAME}"
-
-if [ $? -eq 0 ]; then
-  echo "已保存到：${SAVE_DIR}/${FILENAME}"
-else
-  echo "下载失败"
-  exit 1
-fi
-```
-
-### Step 8 — 更新资产登记
-
-在 `assets/art/generated/MANIFEST.md` 中追加记录（如不存在则创建）：
+生成完成后，在 `assets/art/generated/MANIFEST.md` 中追加记录（不存在则创建）：
 
 ```markdown
-| 文件名 | 类型 | 描述 | Prompt | 生成时间 |
-|--------|------|------|--------|---------|
-| [文件名] | [类型] | [描述] | [使用的 Prompt] | [时间戳] |
+| 类型 | 描述 | 完整 Prompt | 生成时间 |
+|------|------|------------|---------|
+| [类型] | [描述] | [使用的 Prompt] | [时间戳] |
 ```
 
-### Step 9 — 输出结果摘要
+### Step 8 — 输出结果摘要
 
 向用户报告：
-- ✅ 生成成功 / ❌ 失败原因
-- 保存路径
+- ✅ 生成成功（或 ❌ 失败原因）
 - 使用的完整 Prompt
-- 下一步操作建议（使用 `/asset-audit` 检查命名规范，或继续生成更多变体）
+- 提示用户**前往 Discord 频道查看图片**，可在 Discord 中执行 Upscale（U1-U4）放大单格
+- 下一步操作建议（如继续生成变体，或用 `--sref` / `--cref` 保持风格/角色一致性）
 
 ---
 
-## 四格图处理
+## 四格图与 Upscale
 
-Midjourney 默认输出 2×2 四格图。Skill 会提示用户选择：
-- **全部保存** — 保存完整四格图（文件名加 `_grid` 后缀）
-- **选择单格** — 回复 `U1`~`U4` 触发放大，再获取单图（需要额外一轮轮询）
+Midjourney V7 默认输出 2×2 四格图，所有后续操作（Upscale、Vary、Re-roll）均在 **Discord 频道内** 手动完成：
 
-使用 `AskUserQuestion` 询问用户偏好。
+- **U1～U4** — 放大单格为高清大图
+- **V1～V4** — 对单格生成变体
+- **🔄** — 重新生成全部四格
+
+> Skill 只负责发送生成指令和报告完成状态，**不下载图片**。请前往 Discord 频道查看和操作生成结果。
 
 ---
 
@@ -280,10 +315,10 @@ Midjourney 默认输出 2×2 四格图。Skill 会提示用户选择：
 
 | 错误情况 | 处理方式 |
 |---------|---------|
-| 401 Unauthorized | Token 无效或过期，提示重新获取 |
-| 403 Forbidden | 频道权限不足，检查 Bot 权限设置 |
-| 超时未返回结果 | 提示手动检查 Discord 频道，提供频道链接 |
-| 图片下载失败 | 输出原始 URL，提示手动下载 |
+| 401 Unauthorized | Token 无效或过期，提示重新从浏览器 Network 请求头获取 |
+| 403 Forbidden | 频道权限不足，检查是否有发消息权限 |
+| 204 但长时间无回复 | Midjourney 队列拥堵，提示前往 Discord 确认是否接收到任务 |
+| 超时未检测到 Bot 消息 | 提示手动前往 Discord 频道查看，生成可能已完成 |
 | `.env` 缺失 | 输出配置指引（见上方） |
 
 ---
