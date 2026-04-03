@@ -196,53 +196,21 @@ echo "HTTP 状态: $HTTP_STATUS"
 
 > ✅ HTTP 204 表示请求成功，Midjourney Bot 已接收并开始生成。
 
-### Step 6 — 等待生成完成
+### Step 6 — 提示用户前往查看
 
-V7 draft 模式约 15-30 秒，标准模式约 30-90 秒。轮询频道消息检测 Bot 回复：
+请求发送成功（HTTP 204）后，**直接跳过等待**，立即输出以下提示：
 
-```bash
-source .env
+```
+✅ 已成功发送生成请求！
 
-WAIT_SECONDS=150
-POLL_INTERVAL=10
-ELAPSED=0
-
-echo "等待 Midjourney 生成结果..."
-
-while [ $ELAPSED -lt $WAIT_SECONDS ]; do
-  sleep $POLL_INTERVAL
-  ELAPSED=$((ELAPSED + POLL_INTERVAL))
-
-  MESSAGES=$(curl -s \
-    "https://discord.com/api/v10/channels/${DISCORD_CHANNEL_ID}/messages?limit=5" \
-    -H "Authorization: ${DISCORD_TOKEN}")
-
-  RESULT=$(echo "$MESSAGES" | python3 -c "
-import sys, json
-raw = sys.stdin.buffer.read().decode('utf-8', errors='replace')
-msgs = json.loads(raw)
-for msg in msgs:
-    if msg.get('author', {}).get('id') == '936929561302675456':
-        for att in msg.get('attachments', []):
-            url = att.get('url', '')
-            if any(ext in url.lower() for ext in ['.png', '.jpg', '.webp']):
-                print(url)
-                sys.exit(0)
-" 2>/dev/null)
-
-  if [ -n "$RESULT" ]; then
-    echo "DONE"
-    exit 0
-  fi
-
-  echo "  已等待 ${ELAPSED}s..."
-done
-
-echo "TIMEOUT"
-exit 1
+👉 请前往 Discord 频道查看生成结果（draft 模式约 15-30 秒完成）
+   生成完成后可在 Discord 中点击：
+   - U1～U4：放大单格为高清大图
+   - V1～V4：对单格生成变体
+   - 🔄：重新生成全部四格
 ```
 
-> ⚠️ 轮询依赖频道最新消息，推荐使用私有服务器专用频道避免干扰。
+> 不轮询等待结果。MJ 生成完成后结果在 Discord 频道可见，Upscale 也需要在 Discord 手动操作，轮询无法代替这一步骤。
 
 ### Step 7 — 更新资产登记
 
