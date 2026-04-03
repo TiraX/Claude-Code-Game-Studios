@@ -59,13 +59,33 @@ allowed-tools: Read, Glob, Grep, Write, Edit, Bash, AskUserQuestion
 
 | 资产类型 | 推荐参数 | 示例风格词 |
 |---------|---------|-----------|
-| `character` | `--ar 2:3 --draft --v 7` | `character design, full body, white background, game asset` |
+| `character` | `--ar 2:3 --draft --v 7` | `character design sheet, full body, clean white background, front view + 3/4 view side by side, game asset` |
 | `scene` | `--ar 16:9 --draft --v 7` | `environment concept art, game background, detailed` |
 | `ui` | `--ar 1:1 --v 7` | `game UI element, flat design, icon, clean` |
 | `item` | `--ar 1:1 --v 7` | `game item, isolated on white, detailed texture` |
 | `concept` | `--ar 16:9 --draft --v 7` | `concept art, game art style, detailed illustration` |
 
 > 💡 `--draft` 模式速度 2 倍、资源消耗 50%，适合快速迭代——满意后可在 Discord 中点击 Upscale 升级高清。
+
+### ⚠️ 角色资产背景规则（强制）
+
+**`character` 类型必须使用简洁背景，角色是绝对主体。**
+
+- ✅ **强制**：`clean white background` 或 `simple gradient background`——背景不能有叙事元素、场景细节或复杂环境
+- ✅ **强制**：角色主体占画面面积 ≥ 70%
+- ✅ **推荐**：`character design sheet` 格式，包含 `front view + 3/4 view side by side`（正面+四分之三并排），便于美术参考
+- ❌ **禁止**：复杂场景背景（门廊、森林、室内等环境）出现在角色立绘中
+- ❌ **禁止**：环境道具（食物、植物、家具等）出现在角色设计图中
+
+**`character` 类型 Prompt 结构模板**：
+```
+character design sheet, [角色物种/职业/外观详细描述], [服装装备描述], [姿态/表情], [风格关键词], front view + 3/4 view side by side, [光线], clean white background, [渲染质量词] --ar 2:3 --draft --v 7
+```
+
+**参考示例（Zootopia 风格）**：
+```
+character design sheet, anthropomorphic spectacled langur male senior lawyer, tall lean angular build, dark charcoal-black fur, striking white circular eye-ring markings, perfectly tailored three-piece charcoal grey suit, minimal expression commanding presence, Disney Zootopia 3D animation style, front view + 3/4 view side by side, cool dramatic side lighting, clean white background, vibrant saturated colors, Pixar render quality --ar 2:3 --draft --v 7
+```
 
 **V7 进阶参数**（可选，询问用户是否需要）：
 
