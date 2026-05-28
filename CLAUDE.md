@@ -45,6 +45,17 @@ See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 > **First session?** If the project has no engine configured and no game concept,
 > run `/start` to begin the guided onboarding flow.
 
+## Communication Language
+
+- **All communication with the user MUST be in Chinese (中文).** This applies to
+  conversational replies, AskUserQuestion prompts/options, status updates, and
+  explanations.
+- **Code, file paths, technical identifiers, command names, and document section
+  headers remain in English** unless the user explicitly requests otherwise.
+- **Design documents and in-game text** follow the project's localization
+  configuration (see `/setup-localization` once configured), not this rule.
+- This rule applies to all subagents spawned from this project as well.
+
 ## Coding Standards
 
 @.claude/docs/coding-standards.md
