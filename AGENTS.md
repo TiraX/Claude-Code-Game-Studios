@@ -57,6 +57,16 @@ See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for full protocol and examples.
 - Surgical changes: touch only what the task requires, match existing style, and clean up only unused code created by the current change.
 - Goal-driven execution: define verifiable success criteria, then loop until the change is checked.
 
+## Magic Museum Visual Direction
+
+When creating or reviewing concepts for `Magic Museum`, use the latest approved art direction:
+
+- Museum interiors should feel spacious, readable, and curated: broad central aisles, strong focal exhibits, clear exhibit bays, and generous negative space.
+- Use a family-adventure natural history museum staging language: a few memorable exhibits quietly coming alive, warm wonder, and clear silhouettes. Avoid dense fantasy clutter.
+- Ancient Giants Hall should not be only skeletons. Combine one or two major skeletons with lifelike reconstructions, fossil walls, habitat dioramas, glass cases, and clear restoration puzzle moments.
+- Natural Ecology Hall should be bright, sunny, clear, and transparent. Present plant ecology through crafted exhibit bays, glass, daylight, water reflections, and carefully arranged botanical displays, not a dark night scene or a mixed greenhouse jungle.
+- Characters, spirits, and exhibit interactions should lean toward original premium family animated feature appeal: expressive, rounded, charming, and readable, without copying an existing studio or IP.
+
 ## Communication Language
 
 - **All communication with the user MUST be in Chinese (中文).** This applies to
