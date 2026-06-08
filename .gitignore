@@ -139,3 +139,5 @@ $RECYCLE.BIN/
 *.msm
 *.msp
 *.lnk
+/.codex
+/.agents
