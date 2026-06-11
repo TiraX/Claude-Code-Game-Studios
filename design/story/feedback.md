@@ -532,3 +532,28 @@ Version 0.2 已经把故事从“温暖的连续修复任务”提升成具有�
   https://www.writersdigest.com/young-adult-childrens/hooked-excerpt
 - Randy Ingermanson, *Writing the Perfect Scene*：以 Goal / Conflict / Disaster 与 Reaction / Dilemma / Decision 检查场景是否推动故事。
   https://www.advancedfictionwriting.com/articles/writing-the-perfect-scene/
+
+---
+
+# 第三轮反馈：正篇开写闸门
+
+> Review target: `design/story/story.md` Version 0.3 - Reader Engagement Revision
+> Verdict: **PASS，可以开始正篇 Chapter 1-2**
+
+Version 0.3 已落实上一轮所有会阻塞正文写作的抓力问题：
+
+- 开场从展柜缩腿直接发生，周满的目标与主动选择清楚。
+- Chapter 1 以“怎样退货离开”为单一主问题，并用“别找”完成问题接力。
+- Chapter 2 让读者先偏爱苔团，再让封存名单直接威胁她。
+- Chapter 3-4、Chapter 7-8 的中段弃读风险已有明确因果与持续损失约束。
+- 高潮仍由不可逆行动成立，不依赖规则辩论取胜。
+
+当前没有需要继续修改框架的大问题。继续打磨框架的边际收益已经低于写出正文并接受真实试读反馈的价值。
+
+## 正篇写作护栏
+
+1. Chapter 1 中蘑尾、迟迟、白手套都只能短暂留下印象，不能抢走“展柜拒绝搬家 -> 周满想离开 -> 猛犸象写别找”的主线。
+2. 不提前解释周满为什么变回十二岁、司藏先生是谁、修复为何缩短倒计时。
+3. Chapter 2 的情绪中心是苔团与猛犸象，不要让谜题步骤盖过读者对它们的担心。
+4. 笑点落在角色认真处理荒唐问题的行为上，不用连续俏皮比喻替代场景推进。
+5. 写完 Chapter 2 后停止扩写，执行前文定义的真实读者留存测试。
